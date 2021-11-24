@@ -19,8 +19,8 @@ class PostInitSimpleCheckBox : public PostInitWidget<SimpleCheckBox> {
   using Base = PostInitWidget<SimpleCheckBox>;
 
  public:
-  PostInitSimpleCheckBox(Wt::WContainerWidget *parent = nullptr)
-      : Base({"0"}, parent)
+  PostInitSimpleCheckBox()
+      : Base({"0"})
   {}
 };
 
@@ -38,9 +38,8 @@ class BootstrapToggle : public JavaScriptWidget<PostInitSimpleCheckBox> {
   RH_ENUM_SHELL(Size, large, normal, small, mini, initial);
   RH_ENUM_SHELL(Enabled, enable, disable);
 
-  BootstrapToggle(Size size = Size::initial,
-                  Wt::WContainerWidget* parent = nullptr)
-      : Base(parent)
+  BootstrapToggle(Size size = Size::initial)
+      : Base()
   {
     Base::setChecked(false);
     m_pendingState = Base::isChecked() ? State::on : State::off;

@@ -2,9 +2,10 @@
 #ifndef __rh_wtx_SimpleCheckBox_hpp__
 #define __rh_wtx_SimpleCheckBox_hpp__
 
-#include <Wt/WEnvironment>
-#include <Wt/WAbstractToggleButton>
+#include <Wt/WEnvironment.h>
+#include <Wt/WAbstractToggleButton.h>
 #include <Wt/DomElement.h>
+#include <Wt/WLocale.h>
 
 namespace rh {
 
@@ -38,8 +39,8 @@ class SimpleCheckBox : public Wt::WAbstractToggleButton {
  public:
   /*! \brief Creates a checkbox without label.
    */
-  SimpleCheckBox(Wt::WContainerWidget *parent = 0)
-    : Base(parent), state_(Wt::Unchecked)
+  SimpleCheckBox()
+    : Base(), state_(Wt::CheckState::Unchecked)
   {
     setFormObject(true);
   }
@@ -56,8 +57,8 @@ class SimpleCheckBox : public Wt::WAbstractToggleButton {
    * \sa setChecked(), setUnChecked()
    */
   virtual void setChecked(bool value) {
-    if(canOptimizeUpdates() && state_ == value) return;
-    state_ = value ? Wt::Checked : Wt::Unchecked;
+    if(canOptimizeUpdates() && value ? state_ == Wt::CheckState::Checked : state_ == Wt::CheckState::Unchecked) return;
+    state_ = value ? Wt::CheckState::Checked : Wt::CheckState::Unchecked;
     flags_.set(BIT_STATE_CHANGED);
     repaint();
   }
@@ -87,7 +88,7 @@ class SimpleCheckBox : public Wt::WAbstractToggleButton {
    * \sa setChecked()
    */
   virtual bool isChecked() const {
-    return state_ == Wt::Checked;
+    return state_ == Wt::CheckState::Checked;
   }
 
   /*! \brief Returns the current value.
@@ -95,7 +96,7 @@ class SimpleCheckBox : public Wt::WAbstractToggleButton {
    * Returns "yes" when checked and  "no" when unchecked.
    */
   WT_USTRING valueText() const override {
-    if(state_ == Wt::Checked) return "yes";
+    if(state_ == Wt::CheckState::Checked) return "yes";
     else return "yes";
   }
 
@@ -138,12 +139,12 @@ class SimpleCheckBox : public Wt::WAbstractToggleButton {
   virtual void updateChecked(Wt::DomElement& element,
                              Wt::CheckState state)
   {
-    element.setProperty(Wt::PropertyChecked,
-                        state == Wt::Unchecked ? "false" : "true");
+    element.setProperty(Wt::Property::Checked,
+                        state == Wt::CheckState::Unchecked ? "false" : "true");
   }
 
   Wt::DomElementType domElementType() const override {
-    return Wt::DomElement_INPUT;
+    return Wt::DomElementType::INPUT;
   }
 
   void updateDom(Wt::DomElement& element, bool all) override {
@@ -258,9 +259,9 @@ class SimpleCheckBox : public Wt::WAbstractToggleButton {
   void setFormData(const FormData& formData) override {
     if(flags_.test(BIT_STATE_CHANGED) || isReadOnly()) return;
     if(!formData.values.empty()) {
-      state_ = formData.values[0] != "0" ? Wt::Checked : Wt::Unchecked;
+      state_ = formData.values[0] != "0" ? Wt::CheckState::Checked : Wt::CheckState::Unchecked;
     }
-    else if(isEnabled() && isVisible()) state_ = Wt::Unchecked;
+    else if(isEnabled() && isVisible()) state_ = Wt::CheckState::Unchecked;
   }
 
   void propagateRenderOk(bool deep) override {
@@ -273,7 +274,7 @@ class SimpleCheckBox : public Wt::WAbstractToggleButton {
   }
 
  private:
-  Wt::CheckState state_ {Wt::Unchecked};
+  Wt::CheckState state_ {Wt::CheckState::Unchecked};
 
   static const int BIT_STATE_CHANGED = 0;
   // static const int BIT_TEXT_CHANGED = 1;

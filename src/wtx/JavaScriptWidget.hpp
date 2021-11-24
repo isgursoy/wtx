@@ -4,14 +4,17 @@
 
 #include <utility>
 #include <string>
+#include <memory>
 
-#include <Wt/WServer>
-#include <Wt/WApplication>
-#include <Wt/WJavaScript>
-#include <Wt/WLogger>
+#include <Wt/WServer.h>
+#include <Wt/WApplication.h>
+#include <Wt/WJavaScript.h>
+#include <Wt/WLogger.h>
 
 #include "reflection/refactorables.hpp"
 #include "utils/RH_CODE_POINT.hpp"
+
+using namespace std::chrono_literals;
 
 namespace rh {
 
@@ -23,7 +26,7 @@ class JavaScriptWidget : public T {
   using Base = T;
   using This = JavaScriptWidget;
 
-  using SetWtRendered = Wt::JSignal<void>;
+  using SetWtRendered = Wt::JSignal<>;
   using SetWtRenderedSPtr = std::shared_ptr<SetWtRendered>;
   using SetWtRenderedWPtr = std::weak_ptr<SetWtRendered>;
 
@@ -37,7 +40,7 @@ class JavaScriptWidget : public T {
 
   void render(Wt::WFlags<Wt::RenderFlag> flags) override {
     Base::render(flags);
-    if(flags & Wt::RenderFull) {
+    if(flags.test(Wt::RenderFlag::Full)) {
       if(!m_setWtRenderedSPtr->isConnected()) {
         m_setWtRenderedSPtr->connect(this, &This::setWtRenderedHandler);
       }
@@ -53,8 +56,8 @@ class JavaScriptWidget : public T {
   }
 
  protected:
-  static constexpr int renderAtBrowserAttemptsMax = 300;
-  static constexpr int renderAtBrowserAttemptIntervalMilliSecond = 300;
+  static constexpr auto renderAtBrowserAttemptsMax = 300;
+  static constexpr auto renderAtBrowserAttemptIntervalMilliSecond = 300;
 
   // This widget ID. By default, it is this->Base::id(). This virtual member
   // function might be overridden in case of composite widgets, where it might
@@ -101,7 +104,7 @@ class JavaScriptWidget : public T {
         renderAtBrowser();
         SetWtRenderedWPtr setWtRefreshedWPtr = m_setWtRenderedSPtr;
         Wt::WServer::instance()->schedule(
-          renderAtBrowserAttemptIntervalMilliSecond,
+          std::chrono::milliseconds{renderAtBrowserAttemptIntervalMilliSecond},
           Wt::WApplication::instance()->sessionId(),
           [this, setWtRefreshedWPtr]() {
             auto setWtRefreshedSPtr = setWtRefreshedWPtr.lock();
@@ -125,7 +128,7 @@ class JavaScriptWidget : public T {
       "      (function() {"
       "         " + renderAtBrowserJavaScriptStatement() + ";\n"
       "      }());\n"
-      "      " + m_setWtRenderedSPtr->createCall() + ";\n"
+      "      " + m_setWtRenderedSPtr->createCall({}) + ";\n"
       "    }\n"
       "  }\n"
       "}, 0);\n");
